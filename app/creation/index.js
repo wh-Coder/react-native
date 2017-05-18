@@ -9,6 +9,7 @@ import {
   ListView,
   Image,
   Dimensions,
+  AlertIOS,
   RefreshControl,
   ActivityIndicator,
   TouchableHighlight
@@ -16,6 +17,7 @@ import {
 import Icon from 'react-native-vector-icons/Ionicons';
 import request from '../common/request'
 import config from '../common/config'
+import Detail from './detail'
 
 const width = Dimensions.get('window').width;
 
@@ -24,6 +26,85 @@ var cachedResult = {
   items: [],
   total: 0
 }
+
+
+const Item = React.createClass({
+  getInitialState(){
+    var row = this.props.row
+
+    return {
+      up: row.voted,
+      row: row
+    }
+  },
+
+  _up() {
+    var that = this
+    var up = !this.state.up
+    var row = this.state.row
+    var url = config.api.base + config.api.up
+
+    var body = {
+      id: row._id,
+      up: up ? 'yes' : 'no',
+      accessToken: 'abcee'
+    }
+
+    request.post(url, body)
+      .then(function (data) {
+        if (data && data.success) {
+          that.setState({
+            up: up
+          })
+        } else {
+          AlertIOS.alert('点赞失败')
+        }
+      })
+      .catch(function (err) {
+        console.log(err)
+
+        AlertIOS.alert('点赞失败')
+      })
+
+  },
+
+  render(){
+    var row = this.state.row
+    return (
+      <TouchableHighlight onPress={this.props.onSelect}>
+        <View style={styles.item}>
+          <Text style={styles.title}>{row.title}</Text>
+          <Image
+            style={styles.thumb}
+            source={{url: row.thumb}}>
+            <Icon
+              name="ios-play"
+              size={28}
+              style={styles.play}/>
+          </Image>
+          <View style={styles.itemFooter}>
+            <View style={styles.handleBox}>
+              <Icon
+                name={this.state.up ? "ios-heart" : "ios-heart-outline"}
+                size={28}
+                onPress={this._up}
+                style={[this.state.up ? styles.up : styles.down]}/>
+              <Text style={styles.handleText} onPress={this._up}>喜欢</Text>
+            </View>
+            <View style={styles.handleBox}>
+              <Icon
+                name="ios-chatboxes-outline"
+                size={28}
+                style={styles.commentIcon}/>
+              <Text style={styles.handleText}>评论</Text>
+            </View>
+          </View>
+        </View>
+      </TouchableHighlight>
+    )
+  }
+})
+
 
 const List = React.createClass({
 
@@ -39,37 +120,10 @@ const List = React.createClass({
   },
 
   _renderRow(row) {
-    return (
-      <TouchableHighlight>
-        <View style={styles.item}>
-          <Text style={styles.title}>{row.title}</Text>
-          <Image
-            style={styles.thumb}
-            source={{url: row.thumb}}>
-            <Icon
-              name="ios-play"
-              size={28}
-              style={styles.play}/>
-          </Image>
-          <View style={styles.itemFooter}>
-            <View style={styles.handleBox}>
-              <Icon
-                name="ios-heart-outline"
-                size={28}
-                style={styles.up}/>
-              <Text style={styles.handleText}>喜欢</Text>
-            </View>
-            <View style={styles.handleBox}>
-              <Icon
-                name="ios-chatboxes-outline"
-                size={28}
-                style={styles.commentIcon}/>
-              <Text style={styles.handleText}>评论</Text>
-            </View>
-          </View>
-        </View>
-      </TouchableHighlight>
-    )
+    return <Item
+      key={row._id}
+      onSelect={() => this._loadPage(row)}
+      row={row}/>
   },
 
 
@@ -169,6 +223,17 @@ const List = React.createClass({
 
     return <ActivityIndicator style={styles.loadingMore}/>
   },
+
+  _loadPage(row) {
+    this.props.navigator.push({
+      name: 'detail',
+      component: Detail,
+      params: {
+        row: row
+      }
+    })
+  },
+
   _onRefresh(){
     if (this.state.isRefreshing || !this._hasMore()) {
       return
@@ -271,9 +336,13 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: '#333'
   },
-  up: {
+  doown: {
     fontSize: 22,
     color: '#333'
+  },
+  up: {
+    fontSize: 22,
+    color: '#ed7b66'
   },
   commentIcon: {
     fontSize: 22,

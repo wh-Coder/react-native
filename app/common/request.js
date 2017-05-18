@@ -20,7 +20,7 @@ request.get = function (url, params) {
     .then((response) => Mock.mock(response))
 }
 
-request.post = function (url, params) {
+request.post = function (url, body) {
   var options = _.extend(config.header, {
     body: JSON.stringify(body)
   })

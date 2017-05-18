@@ -10,8 +10,9 @@ import {
   StyleSheet,
   Text,
   View,
-  TabBarIOS
+  TabBarIOS,
 } from 'react-native';
+import {Navigator} from 'react-native-deprecated-custom-components'
 import Icon from 'react-native-vector-icons/Ionicons';
 
 const List = require('./app/creation/index');
@@ -41,7 +42,20 @@ const imoocApp = React.createClass({
               selectedTab: 'list',
             });
           }}>
-          <List />
+          <Navigator
+            initialRoute={{
+              name: 'list',
+              component: List
+            }}
+            configureScene={(route) => {
+            return Navigator.SceneConfigs.FloatFromRight
+          }}
+            renderScene={(route, navigator) => {
+            var Component = route.component
+
+            return <Component {...route.params} navigator={navigator}/>
+          }}
+          />
         </Icon.TabBarItem>
         <Icon.TabBarItem
           iconName='ios-recording-outline'
