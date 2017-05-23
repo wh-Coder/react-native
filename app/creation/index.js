@@ -27,7 +27,6 @@ var cachedResult = {
   total: 0
 }
 
-
 const Item = React.createClass({
   getInitialState(){
     var row = this.props.row
@@ -104,7 +103,6 @@ const Item = React.createClass({
     )
   }
 })
-
 
 const List = React.createClass({
 
@@ -229,7 +227,7 @@ const List = React.createClass({
       name: 'detail',
       component: Detail,
       params: {
-        row: row
+        data: row
       }
     })
   },
