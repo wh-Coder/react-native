@@ -86,8 +86,8 @@ const Item = React.createClass({
             <View style={styles.handleBox}>
               <Icon
                 name={this.state.up ? "ios-heart" : "ios-heart-outline"}
-                size={28}
                 onPress={this._up}
+                size={22}
                 style={[this.state.up ? styles.up : styles.down]}/>
               <Text style={styles.handleText} onPress={this._up}>喜欢</Text>
             </View>

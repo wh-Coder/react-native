@@ -47,14 +47,16 @@ const imoocApp = React.createClass({
               name: 'list',
               component: List
             }}
-            configureScene={(route) => {
-            return Navigator.SceneConfigs.FloatFromRight
-          }}
-            renderScene={(route, navigator) => {
-            var Component = route.component
 
-            return <Component {...route.params} navigator={navigator}/>
-          }}
+            configureScene={(route) => {
+              return Navigator.SceneConfigs.FloatFromRight
+            }}
+
+            renderScene={(route, navigator) => {
+              var Component = route.component
+
+              return <Component {...route.params} navigator={navigator}/>
+            }}
           />
         </Icon.TabBarItem>
         <Icon.TabBarItem
