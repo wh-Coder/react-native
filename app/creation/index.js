@@ -174,7 +174,7 @@ const List = React.createClass({
                 dataSource: that.state.dataSource.cloneWithRows(cachedResult.items)
               })
             }
-          }, 2000)
+          }, 0)
         }
       })
       .catch((error) => {
