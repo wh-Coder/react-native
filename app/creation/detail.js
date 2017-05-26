@@ -11,6 +11,9 @@ import {
   Image,
   ListView,
   TouchableOpacity,
+  Modal,
+  AlertIOS,
+  TextInput,
   View,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -18,7 +21,13 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import Video from 'react-native-video'
 import config from '../common/config'
 import request from '../common/request'
+import Button from 'react-native-button'
 
+var cachedResult = {
+  nextPage: 1,
+  items: [],
+  total: 0
+}
 
 const width = Dimensions.get('window').width;
 
@@ -44,7 +53,12 @@ const Detail = React.createClass({
       videoTotal: 0,
       playing: false,
       currentTime: 0,
-      paused: false
+      paused: false,
+
+      animationType: 'none',
+      modalVisible: false,
+      isSending: false,
+      content: ''
     }
   },
 
@@ -124,29 +138,6 @@ const Detail = React.createClass({
     this._fetchData()
   },
 
-  _fetchData() {
-    var that = this
-    var url = config.api.base + config.api.comments
-
-    request.get(url, {
-      creation: 124,
-      accessToken: '123a'
-    })
-      .then(function (data) {
-        if (data && data.success) {
-          var comments = data.data
-          if (comments && comments.length > 0) {
-            that.setState({
-              comments: comments,
-              dataSource: that.state.dataSource.cloneWithRows(comments)
-            })
-          }
-        }
-      })
-      .catch((err) => {
-        console.log(error)
-      })
-  },
   _renderRow(row) {
     return (
       <View key={row._id} style={styles.replyBox}>
@@ -157,6 +148,179 @@ const Detail = React.createClass({
         </View>
       </View>
     )
+  },
+
+
+  _fetchData(page) {
+    var that = this;
+
+    this.setState({
+      isLoadingTail: true
+    })
+
+
+    request.get(config.api.base + config.api.comments, {
+      creation: 124,
+      accessToken: '123a',
+      page: page
+    })
+      .then((data) => {
+        console.log(config.api.base + config.api.creation)
+        if (data.success) {
+          let items = cachedResult.items.slice(); // copy
+
+          items = items.concat(data.data);
+          cachedResult.nextPage += 1
+
+          cachedResult.items = items;
+          cachedResult.total = data.total
+
+          setTimeout(function () {
+            that.setState({
+              isLoadingTail: false,
+              dataSource: that.state.dataSource.cloneWithRows(cachedResult.items)
+            })
+
+          }, 0)
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+        this.setState({
+          isLoadingTail: false,
+        })
+      })
+  },
+
+  _hasMore(){
+    return cachedResult.items.length !== cachedResult.total
+  },
+
+  _fetchMoreData() {
+    if (!this._hasMore() || this.state.isLoadingTail) {
+      return
+    }
+
+    let page = cachedResult.nextPage
+
+    this._fetchData(page)
+
+  },
+
+  _rendFooter() {
+    if (!this._hasMore() && cachedResult.total !== 0) {
+      return (
+        <View style={styles.loadingMore}>
+          <Text style={styles.loadingText}>没有更多了</Text>
+        </View>
+      )
+    }
+
+    if (!this.state.isLoadingTail) {
+      return <View style={styles.loadingMore}/>
+    }
+
+    return <ActivityIndicator style={styles.loadingMore}/>
+  },
+  _focus() {
+    this._setModalVisible(true);
+  },
+
+  _blur() {
+    //
+  },
+
+  _closeModal() {
+
+    this._setModalVisible(false);
+  },
+
+  _setModalVisible(visible) {
+    this.setState({
+      modalVisible: visible
+    })
+  },
+
+  _renderHeader() {
+    var data = this.state.data;
+
+    return (
+      <View style={styles.listHeader}>
+        <View style={styles.infoBox}>
+          <Image style={styles.avatar} source={{uri: data.author.avatar}}/>
+          <View style={styles.descBox}>
+            <Text style={styles.nickname}>{data.author.nickname}</Text>
+            <Text style={styles.title}>{data.title}</Text>
+          </View>
+        </View>
+        <View style={styles.commentBox}>
+          <View style={styles.comment}>
+            <TextInput
+              placeholder="敢不敢评论"
+              style={styles.content}
+              multiline={true}
+              onFocus={this._focus}
+            />
+          </View>
+        </View>
+        <View style={styles.commentArea}>
+          <Text style={styles.commentTitle}>精彩评论</Text>
+        </View>
+      </View>
+    )
+  },
+
+  _submit() {
+    var that = this;
+    // this._setModalVisible(false)
+    // this.state.content
+    if(!this.state.content){
+      return AlertIOS.alert('留言不能为空')
+    }
+    if(this.state.isSending){
+      return AlertIOS.alert('正在发送中')
+    }
+    this.setState({
+      isSending: true
+    },function () {
+      var body = {
+        accessToken: 'abc',
+        comment: this.state.content,
+        creation: '1234'
+      }
+      var url = config.api.base + config.api.comments
+
+      request.post(url,body)
+        .then(function (data) {
+          if(data && data.success){
+            var items = cachedResult.items.slice()
+            items = [{
+              content: that.state.content,
+              replyBy: {
+                nickname: '狗狗说',
+                avatar: 'http://dummyimage.com/640x640/1d6730'
+              }
+            }].concat(items)
+
+            cachedResult.items = items
+            cachedResult.total++
+            that.setState({
+              isSending: false,
+              dataSource: that.state.dataSource.cloneWithRows(cachedResult.items)
+            })
+
+            that._setModalVisible(false)
+          }
+        })
+        .catch((err) => {
+          console.log(err)
+          that.setState({
+            isSending: false
+          })
+          that._setModalVisible(false)
+          AlertIOS.alert('留言失败')
+        })
+    })
   },
 
   render: function () {
@@ -214,28 +378,51 @@ const Detail = React.createClass({
             <View style={[styles.progressBar, {width: width * this.state.videoProgress}]}></View>
           </View>
         </View>
-        <ScrollView
+
+
+        <ListView
+          dataSource={this.state.dataSource}
+          renderRow={this._renderRow}
+
+          renderHeader={this._renderHeader}
+          renderFooter={this._rendFooter}
+          onEndReached={this._fetchMoreData}
+
+          onEndReachedThreshold={20}
+
           enableEmptySections={true}
           showsHorizontalScrollIndicator={false}
           automaticallyAdjustContentInsets={false}
-          style={styles.scrollView}>
-          <View style={styles.infoBox}>
-            <Image style={styles.avatar} source={{uri: data.author.avatar}}/>
-            <View style={styles.descBox}>
-              <Text style={styles.nickname}>{data.author.nickname}</Text>
-              <Text style={styles.title}>{data.title}</Text>
+        />
+        <Modal
+          animationType={'fade'}
+          visible={this.state.modalVisible}
+          onRequestClose={() => {this._setModalVisible(false)}}>
+          <View style={styles.modalContainer}>
+            <Icon
+              onPress={this._closeModal}
+              name="ios-close-outline"
+              style={styles.closeIcon}/>
+            <View style={styles.commentBox}>
+              <View style={styles.comment}>
+                <TextInput
+                  placeholder="敢不敢评论"
+                  style={styles.content}
+                  multiline={true}
+                  onFocus={this._focus}
+                  onBlur={this._blur}
+                  defaultValue={this.state.content}
+                  onChangeText={(text) => {
+                  this.setState({
+                    content: text
+                  })
+                }}
+                />
+              </View>
             </View>
+            <Button style={styles.submitBtn} onPress={this._submit}>评论</Button>
           </View>
-
-          <ListView
-            dataSource={this.state.dataSource}
-            renderRow={this._renderRow}
-            enableEmptySections={true}
-            showsHorizontalScrollIndicator={false}
-            automaticallyAdjustContentInsets={false}
-          />
-
-        </ScrollView>
+        </Modal>
       </View>
     )
   }
@@ -247,6 +434,16 @@ const styles = StyleSheet.create({
     // justifyContent: 'center',
     // alignItems: 'center',
     backgroundColor: '#F5FCFF',
+  },
+  modalContainer: {
+    flex: 1,
+    paddingTop: 45,
+    backgroundColor: '#fff'
+  },
+  closeIcon: {
+    alignSelf: 'center',
+    fontSize: 30,
+    color: '#ee753c'
   },
   videoBox: {
     width: width,
@@ -386,9 +583,53 @@ const styles = StyleSheet.create({
   },
   reply: {
     flex: 1
+  },
+  loadingMore: {
+    marginVertical: 20
+  },
+  loadingText: {
+    color: '#777',
+    textAlign: 'center'
+  },
+  commentBox: {
+    marginTop: 10,
+    marginBottom: 10,
+    padding: 8,
+    width: width
+  },
+  content: {
+    paddingLeft: 2,
+    color: '#eee',
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 4,
+    fontSize: 14,
+    height: 80
+  },
+  listHeader: {
+    width: width,
+    marginTop: 10
+  },
+  commentArea: {
+    width: width,
+    paddingBottom: 6,
+    paddingRight: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee'
+  },
+  commentTitle: {
+    width: width,
+    marginTop: 10
+  },
+  submitBtn: {
+    paddingTop: 10,
+    paddingBottom: 10,
+    width: width-40,
+    borderRadius: 10,
+    marginLeft: 20,
+    marginRight: 20,
+    backgroundColor: '#ee753c'
   }
-
-
 });
 
 module.exports = Detail;
