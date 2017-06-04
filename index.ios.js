@@ -9,6 +9,7 @@ import {
   AppRegistry,
   StyleSheet,
   Text,
+  AsyncStorage,
   View,
   TabBarIOS,
 } from 'react-native';
@@ -18,18 +19,69 @@ import Icon from 'react-native-vector-icons/Ionicons';
 const List = require('./app/creation/index');
 const Edit = require('./app/edit/index');
 const Account = require('./app/account/index');
-
+const Login = require('./app/account/login');
 
 const imoocApp = React.createClass({
 
   getInitialState(){
     return {
       times: this.props.times,
-      selectedTab: 'list'
+      selectedTab: 'account',
+      logined: false,
+      user: null
     }
   },
 
+  _asyncAppStatus() {
+    var that = this
+    AsyncStorage.getItem('user')
+      .then((data) => {
+        let user
+        let newState = {}
+
+        if (data) {
+          user = JSON.parse(data)
+        }
+        if (user && user.accessToken) {
+          newState.user = user
+          newState.logined = true
+        } else {
+          newState.logined = false
+        }
+        that.setState(newState)
+      })
+  },
+
+  _afterLogin(user) {
+    let that = this
+    user = JSON.stringify(user)
+    AsyncStorage.setItem('user', user)
+      .then(() => {
+        that.setState({
+          logined: true,
+          user: user
+        })
+      })
+  },
+
+  _logout() {
+    AsyncStorage.removeItem('user')
+    this.setState({
+      logined: false,
+      user: null
+    })
+  },
+
+  componentDidMount() {
+    this._asyncAppStatus();
+  },
+
   render: function () {
+
+    if (!this.state.logined) {
+      return <Login afterLogin={this._afterLogin}/>
+    }
+
     return (
       <TabBarIOS
         tintColor="#ee735c">
@@ -79,7 +131,7 @@ const imoocApp = React.createClass({
               selectedTab: 'account',
             });
           }}>
-          <Account/>
+          <Account logout={this._logout}/>
         </Icon.TabBarItem>
       </TabBarIOS>
     );

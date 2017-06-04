@@ -257,6 +257,7 @@ const Detail = React.createClass({
           <View style={styles.comment}>
             <TextInput
               placeholder="敢不敢评论"
+              placeholderTextColor='#ccc'
               style={styles.content}
               multiline={true}
               onFocus={this._focus}
@@ -328,11 +329,11 @@ const Detail = React.createClass({
     return (
       <View style={styles.container}>
         <View style={styles.header}>
+          <Text style={styles.headerTitle} numberOfLines={1}>详情页面页</Text>
           <TouchableOpacity style={styles.backBox} onPress={this._pop}>
             <Icon name="ios-arrow-back" style={styles.backIcon}/>
             <Text style={styles.backText}>返回</Text>
           </TouchableOpacity>
-          <Text style={styles.headerTitle} numberOfLines={1}>详情页面页</Text>
         </View>
         <View style={styles.videoBox}>
           <Video
@@ -407,6 +408,7 @@ const Detail = React.createClass({
               <View style={styles.comment}>
                 <TextInput
                   placeholder="敢不敢评论"
+                  placeholderTextColor='#ccc'
                   style={styles.content}
                   multiline={true}
                   onFocus={this._focus}
@@ -516,15 +518,18 @@ const styles = StyleSheet.create({
   },
   backBox: {
     position: 'absolute',
-    left: 0,
-    top: 0,
+    flexDirection: 'row',
+    left: 20,
+    top: 20,
     width: 48,
     height: 48
   },
   backIcon: {
+    flex: 1,
     textAlign: 'center',
   },
   backText: {
+    flex: 3,
     textAlign: 'center',
   },
   headerTitle: {
