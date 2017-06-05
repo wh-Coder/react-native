@@ -26,7 +26,7 @@ const imoocApp = React.createClass({
   getInitialState(){
     return {
       times: this.props.times,
-      selectedTab: 'account',
+      selectedTab: 'edit',
       logined: false,
       user: null
     }

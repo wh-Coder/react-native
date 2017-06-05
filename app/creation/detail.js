@@ -43,22 +43,25 @@ const Detail = React.createClass({
     return {
       data: data,
       dataSource: ds.cloneWithRows([]),
-      comments: [],
-      rate: 1,
-      muted: false,
-      resizeMode: 'contain',
-      repeat: false,
-      videoLoaded: false,
-      videoProgress: 0.01,
-      videoTotal: 0,
-      playing: false,
-      currentTime: 0,
-      paused: false,
 
+      // modal
+      comments: [],
       animationType: 'none',
       modalVisible: false,
       isSending: false,
-      content: ''
+      content: '',
+      // video loads
+      videoLoaded: false,
+      currentTime: 0,
+      videoTotal: 0,
+      videoProgress: 0.01,
+      paused: false,
+      playing: false,
+      // video player
+      repeat: false,
+      resizeMode: 'contain',
+      muted: false,
+      rate: 1
     }
   },
 
