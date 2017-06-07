@@ -7,15 +7,19 @@
     "test": "jest"
   },
   "dependencies": {
+    "immutability-helper": "^2.2.2",
+    "lodash": "^4.17.4",
     "mockjs": "^1.0.1-beta3",
     "query-string": "^4.3.4",
     "react": "16.0.0-alpha.6",
     "react-native": "0.44.0",
+    "react-native-audio": "^3.2.2",
     "react-native-button": "^1.8.2",
     "react-native-deprecated-custom-components": "^0.1.0",
     "react-native-image-picker": "^0.26.3",
     "react-native-progress": "^3.2.1",
     "react-native-sk-countdown": "^1.0.1",
+    "react-native-sound": "^0.10.1",
     "react-native-vector-icons": "^4.1.1",
     "react-native-video": "^1.0.0",
     "sha1": "^1.1.1"

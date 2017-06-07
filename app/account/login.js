@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import Button from 'react-native-button'
 // import CountDownAll from 'react-native-sk-countdown'
-// const CountDown = require('react-native-sk-countdown').CountDownText
+// const CountDown = require('react-native-sk-countdown').CountDown
 import {CountDownText} from 'react-native-sk-countdown'
 
 import request from '../common/request'
